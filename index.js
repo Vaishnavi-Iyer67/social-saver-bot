@@ -2,9 +2,7 @@
 // FIX FOR RAILWAY (Node 18)
 // Add global File polyfill
 // ----------------------------
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "public/index.html"));
-});
+
 if (typeof File === "undefined") {
   global.File = class File extends Blob {
     constructor(chunks, filename, options = {}) {
@@ -28,6 +26,9 @@ const PDFDocument = require("pdfkit");
 const path = require("path");
 
 const app = express();
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "public/index.html"));
+});
 
 // ================= GEMINI SETUP =================
 if (!process.env.GEMINI_API_KEY) {
