@@ -24,10 +24,14 @@ const cookieParser = require("cookie-parser");
 const crypto = require("crypto");
 const PDFDocument = require("pdfkit");
 const path = require("path");
+const fs = require("fs");
+
+// ⭐ Railway fix: ensure /data folder exists
+fs.mkdirSync(path.join(__dirname, "data"), { recursive: true });
 
 const app = express();
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "public/index.html"));
+  res.sendFile(path.join(__dirname, "public/index.html"));
 });
 
 // ================= GEMINI SETUP =================
@@ -44,7 +48,7 @@ app.use(cookieParser());
 app.use(express.static("public"));
 
 // ================= DATABASE =================
-// FIX ONLY THIS LINE ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+// ⭐ Your DB path fix (correct)
 const db = new sqlite3.Database(
   path.join(__dirname, "data", "database.sqlite"),
   (err) => {
@@ -52,8 +56,6 @@ const db = new sqlite3.Database(
     else console.log("✅ SQLite connected");
   }
 );
-// ↑↑↑↑ YOUR ONLY REQUIRED FIX ↑↑↑↑
-
 
 // ---------- TABLES ----------
 db.run(`
@@ -181,13 +183,13 @@ app.get("/api/me", requireAuth, (req, res) => {
 
     db.all(
       `
-            SELECT mc.name AS category, COUNT(sp.id) AS total
-            FROM saved_posts sp
-            JOIN labels l ON sp.label_id = l.id
-            JOIN main_categories mc ON l.main_category_id = mc.id
-            WHERE sp.user_phone = ?
-            GROUP BY mc.id
-        `,
+      SELECT mc.name AS category, COUNT(sp.id) AS total
+      FROM saved_posts sp
+      JOIN labels l ON sp.label_id = l.id
+      JOIN main_categories mc ON l.main_category_id = mc.id
+      WHERE sp.user_phone = ?
+      GROUP BY mc.id
+    `,
       [phone],
       (err, stats) => {
         res.json({ user, stats });
@@ -200,14 +202,14 @@ app.get("/api/me", requireAuth, (req, res) => {
 app.get("/random-post", requireAuth, (req, res) => {
   db.get(
     `
-        SELECT sp.*, mc.name AS category 
-        FROM saved_posts sp
-        JOIN labels l ON sp.label_id = l.id
-        JOIN main_categories mc ON l.main_category_id = mc.id
-        WHERE sp.user_phone = ?
-        ORDER BY RANDOM()
-        LIMIT 1
-    `,
+    SELECT sp.*, mc.name AS category 
+    FROM saved_posts sp
+    JOIN labels l ON sp.label_id = l.id
+    JOIN main_categories mc ON l.main_category_id = mc.id
+    WHERE sp.user_phone = ?
+    ORDER BY RANDOM()
+    LIMIT 1
+  `,
     [req.userPhone],
     (err, row) => {
       if (!row) return res.json({ error: "No posts saved" });
@@ -220,12 +222,12 @@ app.get("/random-post", requireAuth, (req, res) => {
 app.get("/export/pdf", requireAuth, (req, res) => {
   db.all(
     `
-        SELECT sp.*, mc.name AS category 
-        FROM saved_posts sp
-        JOIN labels l ON sp.label_id = l.id
-        JOIN main_categories mc ON l.main_category_id = mc.id
-        WHERE sp.user_phone = ?
-    `,
+    SELECT sp.*, mc.name AS category 
+    FROM saved_posts sp
+    JOIN labels l ON sp.label_id = l.id
+    JOIN main_categories mc ON l.main_category_id = mc.id
+    WHERE sp.user_phone = ?
+  `,
     [req.userPhone],
     (err, posts) => {
       const doc = new PDFDocument();
@@ -251,14 +253,14 @@ app.get("/export/pdf", requireAuth, (req, res) => {
 app.get("/posts/all", requireAuth, (req, res) => {
   db.all(
     `
-        SELECT sp.id, sp.original_url, sp.ai_summary,
-               l.name AS label, mc.name AS category, sp.created_at
-        FROM saved_posts sp
-        JOIN labels l ON sp.label_id = l.id
-        JOIN main_categories mc ON l.main_category_id = mc.id
-        WHERE sp.user_phone = ?
-        ORDER BY sp.created_at DESC
-    `,
+    SELECT sp.id, sp.original_url, sp.ai_summary,
+           l.name AS label, mc.name AS category, sp.created_at
+    FROM saved_posts sp
+    JOIN labels l ON sp.label_id = l.id
+    JOIN main_categories mc ON l.main_category_id = mc.id
+    WHERE sp.user_phone = ?
+    ORDER BY sp.created_at DESC
+  `,
     [req.userPhone],
     (err, rows) => res.json(rows)
   );
@@ -267,13 +269,13 @@ app.get("/posts/all", requireAuth, (req, res) => {
 app.get("/analytics/categories", requireAuth, (req, res) => {
   db.all(
     `
-        SELECT mc.name AS category, COUNT(sp.id) AS total_posts
-        FROM main_categories mc
-        LEFT JOIN labels l ON mc.id = l.main_category_id
-        LEFT JOIN saved_posts sp ON sp.label_id = l.id AND sp.user_phone = ?
-        GROUP BY mc.id
-        ORDER BY total_posts DESC
-    `,
+    SELECT mc.name AS category, COUNT(sp.id) AS total_posts
+    FROM main_categories mc
+    LEFT JOIN labels l ON mc.id = l.main_category_id
+    LEFT JOIN saved_posts sp ON sp.label_id = l.id AND sp.user_phone = ?
+    GROUP BY mc.id
+    ORDER BY total_posts DESC
+  `,
     [req.userPhone],
     (err, rows) => res.json(rows)
   );
@@ -282,15 +284,15 @@ app.get("/analytics/categories", requireAuth, (req, res) => {
 app.get("/analytics/trending", requireAuth, (req, res) => {
   db.all(
     `
-        SELECT l.name AS label, mc.name AS category, COUNT(sp.id) AS total_posts
-        FROM saved_posts sp
-        JOIN labels l ON sp.label_id = l.id
-        JOIN main_categories mc ON l.main_category_id = mc.id
-        WHERE sp.user_phone = ?
-        GROUP BY l.id
-        ORDER BY total_posts DESC
-        LIMIT 5
-    `,
+    SELECT l.name AS label, mc.name AS category, COUNT(sp.id) AS total_posts
+    FROM saved_posts sp
+    JOIN labels l ON sp.label_id = l.id
+    JOIN main_categories mc ON l.main_category_id = mc.id
+    WHERE sp.user_phone = ?
+    GROUP BY l.id
+    ORDER BY total_posts DESC
+    LIMIT 5
+  `,
     [req.userPhone],
     (err, rows) => res.json(rows)
   );
@@ -302,13 +304,13 @@ app.get("/search-api", requireAuth, (req, res) => {
 
   db.all(
     `
-        SELECT sp.*, l.name AS label, mc.name AS category
-        FROM saved_posts sp
-        JOIN labels l ON sp.label_id = l.id
-        JOIN main_categories mc ON l.main_category_id = mc.id
-        WHERE sp.user_phone = ?
-          AND (sp.ai_summary LIKE ? OR l.name LIKE ? OR mc.name LIKE ?)
-    `,
+    SELECT sp.*, l.name AS label, mc.name AS category
+    FROM saved_posts sp
+    JOIN labels l ON sp.label_id = l.id
+    JOIN main_categories mc ON l.main_category_id = mc.id
+    WHERE sp.user_phone = ?
+      AND (sp.ai_summary LIKE ? OR l.name LIKE ? OR mc.name LIKE ?)
+  `,
     [req.userPhone, q, q, q],
     (err, rows) => res.json(rows)
   );
@@ -443,9 +445,9 @@ app.post("/whatsapp", async (req, res) => {
   function save(labelId) {
     db.run(
       `
-        INSERT INTO saved_posts (user_phone, original_url, extracted_text, ai_summary, label_id)
-        VALUES (?, ?, ?, ?, ?)
-        `,
+      INSERT INTO saved_posts (user_phone, original_url, extracted_text, ai_summary, label_id)
+      VALUES (?, ?, ?, ?, ?)
+      `,
       [from, msg, content, summary, labelId]
     );
 
@@ -456,6 +458,8 @@ app.post("/whatsapp", async (req, res) => {
   }
 });
 
-// ================= SERVER =================
+// ================= SERVER (Railway fix: MUST bind 0.0.0.0) =================
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("🚀 Running on port", PORT));
+app.listen(PORT, "0.0.0.0", () =>
+  console.log("🚀 Running on port", PORT)
+);
