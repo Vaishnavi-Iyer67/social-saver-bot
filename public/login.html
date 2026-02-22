@@ -1,135 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Login • Social Saver</title>
+<label>Your WhatsApp Number</label>
+<input type="text" id="phone" placeholder="+91 9876543210">
 
-<script src="https://cdn.tailwindcss.com"></script>
+<button onclick="accessBot()">Access the Bot</button>
 
 <script>
-tailwind.config = {
-    theme: {
-        extend: {
-            colors: {
-                cream: "#F7F5F2",
-                cocoa: "#D8C3A5",
-                mint: "#B8E8D8",
-                mocha: "#3A2E2E",
-                espresso: "#1E1A1A",
-            }
-        }
+async function accessBot() {
+    const phone = document.getElementById("phone").value.trim();
+    if (!phone) {
+        alert("Enter your number");
+        return;
     }
-};
-</script>
 
-<style>
-/* Fix invisible text */
-input {
-    color: #1E1A1A !important;
-}
-input::placeholder {
-    color: #6b6b6b !important;
-}
-
-/* Fix dark mode */
-html.dark {
-    background-color: #1E1A1A !important;
-}
-html.dark input {
-    background: #2b2420 !important;
-    color: #fff !important;
-}
-</style>
-
-</head>
-
-<body class="bg-cream text-mocha transition-all duration-300">
-
-<div class="absolute top-4 right-6">
-    <button id="themeToggle"
-        class="px-4 py-2 rounded-full bg-cocoa text-mocha text-sm shadow">
-        ☀️ Light
-    </button>
-</div>
-
-<div class="min-h-screen flex items-center justify-center px-6 fade-in">
-
-    <div class="bg-white dark:bg-espresso text-mocha dark:text-cream
-                w-full max-w-md p-10 rounded-2xl shadow">
-
-        <div class="text-center mb-6">
-            <div class="text-4xl mb-2">☕</div>
-            <h1 class="text-2xl font-semibold">Welcome Back</h1>
-            <p class="text-mocha/60 dark:text-cream/70 text-sm mt-1">
-                Enter your phone to continue
-            </p>
-        </div>
-
-        <div class="space-y-4">
-            <label class="block text-sm mb-1">Phone Number</label>
-            <input id="phoneInput"
-                   class="w-full px-4 py-3 rounded-xl border border-cocoa/40
-                          bg-cream focus:outline-none"
-                   placeholder="+91XXXXXXXXXX" />
-
-            <button onclick="requestLogin()"
-                    class="w-full mt-4 py-3 bg-mint text-mocha rounded-xl shadow">
-                Continue
-            </button>
-        </div>
-
-        <div id="resultBox" class="mt-6 p-4 bg-mint rounded-xl text-mocha hidden"></div>
-
-    </div>
-</div>
-
-<script>
-// Theme toggle
-const btn = document.getElementById("themeToggle");
-
-btn.addEventListener("click", () => {
-    document.documentElement.classList.toggle("dark");
-
-    const mode = document.documentElement.classList.contains("dark")
-        ? "dark"
-        : "light";
-
-    btn.innerText = mode === "dark" ? "🌙 Dark" : "☀️ Light";
-
-    localStorage.setItem("theme", mode);
-});
-
-// Restore saved mode
-if (localStorage.getItem("theme") === "dark") {
-    document.documentElement.classList.add("dark");
-    btn.innerText = "🌙 Dark";
-}
-
-// Send login request
-async function requestLogin() {
-    const phone = document.getElementById("phoneInput").value.trim();
-    if (!phone) return alert("Enter phone number");
-
-    const res = await fetch("https://social-saver-bot-production.up.railway.app/login-request", {
+    // 1️⃣ LOGIN (BACKEND)
+    const res = await fetch("/login-request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone })
     });
-
     const data = await res.json();
 
-    const box = document.getElementById("resultBox");
-    box.classList.remove("hidden");
-    box.innerHTML = `
-        We sent you a link via WhatsApp!<br><br>
-        If not, click here to open manually:<br>
-        <a class="underline text-blue-800" href="${data.loginLink}">
-            ${data.loginLink}
-        </a>
-    `;
+    // 2️⃣ OPEN DASHBOARD
+    window.location.href = data.loginLink;
+
+    // 3️⃣ OPEN WHATSAPP CHAT (user's own account)
+    const bot = "14155238886";
+    const code = "join year-rest";
+    window.open(`https://wa.me/${bot}?text=${encodeURIComponent(code)}`);
 }
 </script>
-
-</body>
-</html>

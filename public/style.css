@@ -141,3 +141,35 @@ html.dark .result-box {
     background: #38534d;
     color: #fff;
 }
+.whatsapp-box {
+  background: #ffffff;
+  padding: 20px;
+  margin: 20px 0;
+  border-radius: 15px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+  text-align: center;
+}
+
+.whatsapp-btn {
+  background: #25D366;
+  border: none;
+  color: white;
+  font-size: 18px;
+  padding: 12px 20px;
+  border-radius: 50px;
+  cursor: pointer;
+  margin-top: 10px;
+  width: 70%;
+}
+
+.whatsapp-btn:hover {
+  background: #1ebe5d;
+  transform: translateY(-2px);
+  transition: 0.2s;
+}
+
+.bot-note {
+  font-size: 14px;
+  color: #555;
+  margin-top: 10px;
+}

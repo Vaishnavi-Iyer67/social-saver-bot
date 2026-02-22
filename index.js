@@ -2,7 +2,6 @@
 // FIX FOR RAILWAY (Node 18)
 // Add global File polyfill
 // ----------------------------
-
 if (typeof File === "undefined") {
   global.File = class File extends Blob {
     constructor(chunks, filename, options = {}) {
@@ -26,29 +25,23 @@ const PDFDocument = require("pdfkit");
 const path = require("path");
 const fs = require("fs");
 
-// ⭐ Railway fix: ensure /data folder exists
+// Ensure DB folder exists (Railway fix)
 fs.mkdirSync(path.join(__dirname, "data"), { recursive: true });
 
 const app = express();
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/index.html"));
-});
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(cookieParser());
+app.use(express.static("public"));
 
-// ================= GEMINI SETUP =================
+// Load Gemini
 if (!process.env.GEMINI_API_KEY) {
   console.error("❌ GEMINI_API_KEY missing");
   process.exit(1);
 }
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// ================= EXPRESS =================
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
-app.use(cookieParser());
-app.use(express.static("public"));
-
-// ================= DATABASE =================
-// ⭐ Your DB path fix (correct)
+// Initialize SQLite DB
 const db = new sqlite3.Database(
   path.join(__dirname, "data", "database.sqlite"),
   (err) => {
@@ -57,55 +50,59 @@ const db = new sqlite3.Database(
   }
 );
 
-// ---------- TABLES ----------
+// ----------------------------
+// DATABASE TABLES
+// ----------------------------
 db.run(`
 CREATE TABLE IF NOT EXISTS users (
-    phone TEXT PRIMARY KEY,
-    name TEXT,
-    avatar_color TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  phone TEXT PRIMARY KEY,
+  name TEXT,
+  avatar_color TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 )
 `);
 
 db.run(`
 CREATE TABLE IF NOT EXISTS login_tokens (
-    token TEXT PRIMARY KEY,
-    phone TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  token TEXT PRIMARY KEY,
+  phone TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 )
 `);
 
 db.run(`
 CREATE TABLE IF NOT EXISTS main_categories (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT UNIQUE
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT UNIQUE
 )
 `);
 
 db.run(`
 CREATE TABLE IF NOT EXISTS labels (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT,
-    main_category_id INTEGER,
-    UNIQUE(name, main_category_id),
-    FOREIGN KEY(main_category_id) REFERENCES main_categories(id)
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT,
+  main_category_id INTEGER,
+  UNIQUE(name, main_category_id),
+  FOREIGN KEY(main_category_id) REFERENCES main_categories(id)
 )
 `);
 
 db.run(`
 CREATE TABLE IF NOT EXISTS saved_posts (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_phone TEXT,
-    original_url TEXT,
-    extracted_text TEXT,
-    ai_summary TEXT,
-    label_id INTEGER,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(label_id) REFERENCES labels(id)
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_phone TEXT,
+  original_url TEXT,
+  extracted_text TEXT,
+  ai_summary TEXT,
+  label_id INTEGER,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(label_id) REFERENCES labels(id)
 )
 `);
 
-// ================== AUTH MIDDLEWARE ==================
+// ----------------------------
+// AUTH MIDDLEWARE
+// ----------------------------
 function requireAuth(req, res, next) {
   const token = req.cookies.auth_token;
   if (!token) return res.redirect("/login.html");
@@ -117,7 +114,13 @@ function requireAuth(req, res, next) {
   });
 }
 
-// ================== STATIC PROTECTED ROUTES ==================
+// ----------------------------
+// STATIC PAGES
+// ----------------------------
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/index.html"));
+});
+
 app.get("/dashboard", requireAuth, (req, res) => {
   res.sendFile(path.join(__dirname, "public/dashboard.html"));
 });
@@ -134,35 +137,32 @@ app.get("/profile", requireAuth, (req, res) => {
   res.sendFile(path.join(__dirname, "public/profile.html"));
 });
 
-// ================== MAGIC LINK LOGIN ==================
+// ----------------------------
+// MAGIC LINK LOGIN
+// ----------------------------
 app.post("/login-request", (req, res) => {
   const { phone } = req.body;
-
   if (!phone) return res.json({ error: "Phone required" });
 
   const token = crypto.randomBytes(30).toString("hex");
-
   db.run("INSERT INTO login_tokens (token, phone) VALUES (?, ?)", [token, phone]);
 
   const loginLink = `${process.env.APP_URL}/login?token=${token}`;
-
   return res.json({ loginLink });
 });
 
 app.get("/login", (req, res) => {
   const token = req.query.token;
-  if (!token) return res.send("Invalid Token");
 
-  db.get("SELECT phone FROM login_tokens WHERE token = ?", [token], (err, row) => {
+  db.get("SELECT phone FROM login_tokens WHERE token=?", [token], (err, row) => {
     if (!row) return res.send("Invalid or expired token");
 
     res.cookie("auth_token", token, { httpOnly: true });
 
-    db.get("SELECT phone FROM users WHERE phone = ?", [row.phone], (err, u) => {
+    db.get("SELECT phone FROM users WHERE phone=?", [row.phone], (err, u) => {
       if (!u) {
         const colors = ["mint", "cream", "cocoa"];
         const randomColor = colors[Math.floor(Math.random() * colors.length)];
-
         db.run(
           "INSERT INTO users (phone, name, avatar_color) VALUES (?, ?, ?)",
           [row.phone, "User " + row.phone.slice(-4), randomColor]
@@ -174,12 +174,12 @@ app.get("/login", (req, res) => {
   });
 });
 
-// ================== USER PROFILE API ==================
+// ----------------------------
+// USER PROFILE API
+// ----------------------------
 app.get("/api/me", requireAuth, (req, res) => {
-  const phone = req.userPhone;
-
-  db.get("SELECT * FROM users WHERE phone = ?", [phone], (err, user) => {
-    if (!user) return res.json({ error: "User not found" });
+  db.get("SELECT * FROM users WHERE phone=?", [req.userPhone], (err, user) => {
+    if (!user) return res.json({ error: "Not found" });
 
     db.all(
       `
@@ -190,19 +190,19 @@ app.get("/api/me", requireAuth, (req, res) => {
       WHERE sp.user_phone = ?
       GROUP BY mc.id
     `,
-      [phone],
-      (err, stats) => {
-        res.json({ user, stats });
-      }
+      [req.userPhone],
+      (err, stats) => res.json({ user, stats })
     );
   });
 });
 
-// ================== RANDOM INSPIRATION ==================
+// ----------------------------
+// RANDOM POST
+// ----------------------------
 app.get("/random-post", requireAuth, (req, res) => {
   db.get(
     `
-    SELECT sp.*, mc.name AS category 
+    SELECT sp.*, mc.name AS category
     FROM saved_posts sp
     JOIN labels l ON sp.label_id = l.id
     JOIN main_categories mc ON l.main_category_id = mc.id
@@ -211,18 +211,17 @@ app.get("/random-post", requireAuth, (req, res) => {
     LIMIT 1
   `,
     [req.userPhone],
-    (err, row) => {
-      if (!row) return res.json({ error: "No posts saved" });
-      res.json(row);
-    }
+    (err, row) => res.json(row || { error: "No posts" })
   );
 });
 
-// ================== EXPORT PDF ==================
+// ----------------------------
+// EXPORT PDF
+// ----------------------------
 app.get("/export/pdf", requireAuth, (req, res) => {
   db.all(
     `
-    SELECT sp.*, mc.name AS category 
+    SELECT sp.*, mc.name AS category
     FROM saved_posts sp
     JOIN labels l ON sp.label_id = l.id
     JOIN main_categories mc ON l.main_category_id = mc.id
@@ -249,12 +248,14 @@ app.get("/export/pdf", requireAuth, (req, res) => {
   );
 });
 
-// ================== POSTS & ANALYTICS ==================
+// ----------------------------
+// ANALYTICS
+// ----------------------------
 app.get("/posts/all", requireAuth, (req, res) => {
   db.all(
     `
-    SELECT sp.id, sp.original_url, sp.ai_summary,
-           l.name AS label, mc.name AS category, sp.created_at
+    SELECT sp.id, sp.original_url, sp.ai_summary, l.name AS label,
+           mc.name AS category, sp.created_at
     FROM saved_posts sp
     JOIN labels l ON sp.label_id = l.id
     JOIN main_categories mc ON l.main_category_id = mc.id
@@ -298,10 +299,11 @@ app.get("/analytics/trending", requireAuth, (req, res) => {
   );
 });
 
-// ================== SEARCH ==================
+// ----------------------------
+// SEARCH
+// ----------------------------
 app.get("/search-api", requireAuth, (req, res) => {
   const q = `%${req.query.query}%`;
-
   db.all(
     `
     SELECT sp.*, l.name AS label, mc.name AS category
@@ -316,149 +318,189 @@ app.get("/search-api", requireAuth, (req, res) => {
   );
 });
 
-// ================== AI ANALYZER & INSTAGRAM META ==================
+// ====================================================
+// AI FUNCTIONS
+// ====================================================
+
 async function analyzeWithGemini(text) {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-    const prompt = `
-Analyze:
-"${text}"
 
-1 sentence summary, 1 broad category, 1 short label.
-JSON only:
+    const prompt = `
+Analyze this content and return EXACT JSON:
 {
-"summary": "...",
-"main_category": "...",
-"label": "..."
+ "summary": "...",
+ "main_category": "...",
+ "label": "..."
 }
+
+CONTENT:
+"${text}"
 `;
 
     let raw = (
       await model.generateContent(prompt)
-    ).response
-      .text()
-      .replace(/```json/g, "")
-      .replace(/```/g, "")
-      .trim();
+    ).response.text();
 
+    raw = raw.replace(/```json|```/g, "").trim();
     return JSON.parse(raw);
-  } catch {
-    return { summary: "Failed", main_category: "general", label: "general" };
+  } catch (e) {
+    return {
+      summary: "Failed to analyze",
+      main_category: "general",
+      label: "general"
+    };
   }
 }
 
 async function extractInstagramMetadata(url) {
   try {
     const html = (
-      await axios.get(url, {
-        headers: { "User-Agent": "Mozilla/5.0" }
-      })
+      await axios.get(url, { headers: { "User-Agent": "Mozilla/5.0" } })
     ).data;
     const $ = cheerio.load(html);
-    return `${$('meta[property="og:title"]').attr("content") || ""} ${
-      $('meta[property="og:description"]').attr("content") || ""
-    }`;
+
+    return (
+      $('meta[property="og:title"]').attr("content") +
+      " " +
+      $('meta[property="og:description"]').attr("content")
+    ).trim();
   } catch {
     return null;
   }
 }
 
-// ================== WHATSAPP BOT ==================
+// ====================================================
+// WHATSAPP BOT (CLEAN FLOW)
+// ====================================================
+
 app.post("/whatsapp", async (req, res) => {
   if (!req.body.Body) return res.sendStatus(200);
 
-  const msg = req.body.Body;
+  const msg = req.body.Body.trim();
   const from = req.body.From;
 
-  // Login shortcut
-  if (msg.trim().toUpperCase() === "LOGIN") {
-    const token = crypto.randomBytes(30).toString("hex");
-    db.run("INSERT INTO login_tokens (token, phone) VALUES (?, ?)", [
-      token,
-      from
-    ]);
+  // ----------------------------
+  // NEW USER: create account + send dashboard link
+  // ----------------------------
+  db.get("SELECT phone FROM users WHERE phone=?", [from], async (err, user) => {
+    if (!user) {
+      const colors = ["mint", "cream", "cocoa"];
+      const c = colors[Math.floor(Math.random() * colors.length)];
 
-    const link = `${process.env.APP_URL}/login?token=${token}`;
-
-    res.set("Content-Type", "text/xml");
-    return res.send(
-      `<Response><Message>Your login link:\n${link}</Message></Response>`
-    );
-  }
-
-  // URL detection
-  const urlMatch = msg.match(/https?:\/\/\S+/);
-  let content = msg;
-
-  if (urlMatch && urlMatch[0].includes("instagram.com")) {
-    const meta = await extractInstagramMetadata(urlMatch[0]);
-    content = meta?.length > 5 ? meta : "Instagram Post";
-  }
-
-  const { summary, main_category, label } = await analyzeWithGemini(content);
-
-  // ensure user exists
-  db.get("SELECT phone FROM users WHERE phone = ?", [from], (err, row) => {
-    if (!row) {
       db.run(
-        "INSERT INTO users (phone, name, avatar_color) VALUES (?, ?, ?)",
-        [from, "User " + from.slice(-4), "mint"]
+        "INSERT INTO users (phone,name,avatar_color) VALUES (?,?,?)",
+        [from, "User " + from.slice(-4), c]
+      );
+
+      const token = crypto.randomBytes(30).toString("hex");
+      db.run("INSERT INTO login_tokens (token, phone) VALUES (?,?)", [
+        token,
+        from
+      ]);
+
+      const link = `${process.env.APP_URL}/login?token=${token}`;
+
+      return sendWA(
+        res,
+        `Welcome to Social Saver! 🎉\n\nYour dashboard:\n${link}\n\nSend any Instagram link to save it! 📥`
       );
     }
-  });
 
-  // ensure category
+    // ----------------------------
+    // Existing user types: "dashboard"
+    // ----------------------------
+    if (msg.toLowerCase() === "dashboard") {
+      const token = crypto.randomBytes(30).toString("hex");
+
+      db.run("INSERT INTO login_tokens (token,phone) VALUES (?,?)", [
+        token,
+        from
+      ]);
+
+      const link = `${process.env.APP_URL}/login?token=${token}`;
+
+      return sendWA(res, `Here is your dashboard:\n${link}`);
+    }
+
+    // ----------------------------
+    // Process Instagram links or text
+    // ----------------------------
+    let content = msg;
+    const urlMatch = msg.match(/https?:\/\/\S+/);
+
+    if (urlMatch && urlMatch[0].includes("instagram.com")) {
+      const meta = await extractInstagramMetadata(urlMatch[0]);
+      if (meta) content = meta;
+    }
+
+    const { summary, main_category, label } = await analyzeWithGemini(content);
+
+    ensureCategoryAndLabel(main_category, label, (labelId) => {
+      db.run(
+        `
+        INSERT INTO saved_posts (user_phone,original_url,extracted_text,ai_summary,label_id)
+        VALUES (?,?,?,?,?)
+      `,
+        [from, msg, content, summary, labelId]
+      );
+
+      return sendWA(
+        res,
+        `Saved under ${main_category} → ${label}\n${summary}`
+      );
+    });
+  });
+});
+
+// Helper to insert categories & labels
+function ensureCategoryAndLabel(category, label, callback) {
   db.get(
-    "SELECT id FROM main_categories WHERE name = ?",
-    [main_category],
+    "SELECT id FROM main_categories WHERE name=?",
+    [category],
     (err, cat) => {
       if (!cat) {
         db.run(
           "INSERT INTO main_categories (name) VALUES (?)",
-          [main_category],
+          [category],
           function () {
-            handleLabel(this.lastID);
+            ensureLabel(label, this.lastID, callback);
           }
         );
-      } else handleLabel(cat.id);
+      } else {
+        ensureLabel(label, cat.id, callback);
+      }
     }
   );
+}
 
-  function handleLabel(catId) {
-    db.get(
-      "SELECT id FROM labels WHERE name=? AND main_category_id=?",
-      [label, catId],
-      (err, lab) => {
-        if (!lab) {
-          db.run(
-            "INSERT INTO labels (name, main_category_id) VALUES (?, ?)",
-            [label, catId],
-            function () {
-              save(this.lastID);
-            }
-          );
-        } else save(lab.id);
-      }
-    );
-  }
+function ensureLabel(label, catId, callback) {
+  db.get(
+    "SELECT id FROM labels WHERE name=? AND main_category_id=?",
+    [label, catId],
+    (err, lab) => {
+      if (!lab) {
+        db.run(
+          "INSERT INTO labels (name,main_category_id) VALUES (?,?)",
+          [label, catId],
+          function () {
+            callback(this.lastID);
+          }
+        );
+      } else callback(lab.id);
+    }
+  );
+}
 
-  function save(labelId) {
-    db.run(
-      `
-      INSERT INTO saved_posts (user_phone, original_url, extracted_text, ai_summary, label_id)
-      VALUES (?, ?, ?, ?, ?)
-      `,
-      [from, msg, content, summary, labelId]
-    );
+// Send WhatsApp XML
+function sendWA(res, text) {
+  res.set("Content-Type", "text/xml");
+  return res.send(`<Response><Message>${text}</Message></Response>`);
+}
 
-    res.set("Content-Type", "text/xml");
-    res.send(
-      `<Response><Message>Saved under ${main_category} → ${label}\n${summary}</Message></Response>`
-    );
-  }
-});
-
-// ================= SERVER (Railway fix: MUST bind 0.0.0.0) =================
+// ----------------------------
+// START SERVER
+// ----------------------------
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () =>
   console.log("🚀 Running on port", PORT)
