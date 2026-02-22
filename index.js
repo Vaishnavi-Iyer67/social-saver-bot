@@ -2,6 +2,9 @@
 // FIX FOR RAILWAY (Node 18)
 // Add global File polyfill
 // ----------------------------
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "public/index.html"));
+});
 if (typeof File === "undefined") {
   global.File = class File extends Blob {
     constructor(chunks, filename, options = {}) {
