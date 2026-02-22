@@ -1,29 +1,62 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <title>Social Saver</title>
-    <style>
-        body {
-            background:#111;
-            color:white;
-            font-family:Arial;
-            text-align:center;
-            padding-top:100px;
-        }
-        a.button {
-            padding:15px 25px;
-            background:#9CF5D1;
-            color:black;
-            border-radius:10px;
-            text-decoration:none;
-            font-size:20px;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <h1>☕ Welcome to Social Saver</h1>
-    <p>Save, analyze and organize your WhatsApp content.</p>
+<body class="landing-bg">
 
-    <a class="button" href="/login.html">Start Login</a>
+    <!-- Top Navigation -->
+    <nav class="nav fade-in">
+        <div class="logo">☘ social saver</div>
+
+        <div class="nav-links">
+            <a href="#">Archive</a>
+            <a href="#">About</a>
+            <a href="#" class="nav-button">Connect</a>
+        </div>
+    </nav>
+
+    <!-- Decorative floating icons -->
+    <div class="floating-icons">
+        <img src="assets/save.png" class="icon spin" alt="">
+        <img src="assets/whatsapp.png" class="icon pop delay-1" alt="">
+        <img src="assets/instagram.png" class="icon pop delay-2" alt="">
+        <img src="assets/star.png" class="icon float delay-3" alt="">
+    </div>
+
+    <!-- Main Hero Section -->
+    <section class="hero fade-in delay-1">
+        <h1 class="hero-title">
+            Save what<br>
+            <span class="mint">inspires</span>
+        </h1>
+
+        <p class="hero-desc">
+            Organize your WhatsApp & Instagram media instantly.<br>
+            Smart. Clean. Automatic.
+        </p>
+
+        <a href="/login.html" class="cta-button fade-in delay-2">Start Saving →</a>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="feature fade-in delay-1">
+            <h3>📁 Auto Archive</h3>
+            <p>Automatically collects and organizes everything you save.</p>
+        </div>
+
+        <div class="feature fade-in delay-2">
+            <h3>✨ Smart Highlights</h3>
+            <p>Detects important messages & media. You won’t miss anything.</p>
+        </div>
+
+        <div class="feature fade-in delay-3">
+            <h3>🔍 Deep Analytics</h3>
+            <p>Breakdowns of chats, media categories, people & trends.</p>
+        </div>
+    </section>
+
 </body>
 </html>

@@ -1,82 +1,179 @@
-/* ====================================================
-   Café + Mint Custom Theme Palette
-   Used across all pages
-   ==================================================== */
-
+/* ---------------------------------------------------
+   FONT + COLOR SYSTEM (inspired by screenshot)
+--------------------------------------------------- */
 :root {
     --cream: #f7f4ef;
-    --cocoa: #b69372;
-    --mocha: #6a4e37;
-    --espresso: #2b1d14;
-    --mint: #9ce2c9;
+    --green: #7ea68c;
+    --dark: #2a241f;
+    --mint: #9cc8a5;
+    --soft-green: #dfe9e1;
+    --serif: 'Georgia', serif;
+    --sans: 'Inter', sans-serif;
 }
 
-.dark {
-    --cream: #2b1d14;
-    --cocoa: #8a6d5a;
-    --mocha: #f7f4ef;
-    --espresso: #1a120d;
-    --mint: #8bdcc2;
-}
+/* Global reset */
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-/* Expose to Tailwind via utility classes */
-.bg-cream     { background-color: var(--cream); }
-.bg-cocoa     { background-color: var(--cocoa); }
-.bg-mocha     { background-color: var(--mocha); }
-.bg-espresso  { background-color: var(--espresso); }
-.bg-mint      { background-color: var(--mint); }
-
-.text-cream    { color: var(--cream); }
-.text-cocoa    { color: var(--cocoa); }
-.text-mocha    { color: var(--mocha); }
-.text-espresso { color: var(--espresso); }
-.text-mint     { color: var(--mint); }
-
-.border-cream    { border-color: var(--cream); }
-.border-cocoa    { border-color: var(--cocoa); }
-.border-mocha    { border-color: var(--mocha); }
-.border-espresso { border-color: var(--espresso); }
-.border-mint     { border-color: var(--mint); }
-
-/* ====================================================
-   Global Transitions — makes theme switching smooth
-   ==================================================== */
-* {
-    transition: background-color .25s ease, color .25s ease, border-color .25s ease;
-}
-
-/* ====================================================
-   Scrollbar styling (soft café)
-   ==================================================== */
-::-webkit-scrollbar {
-    width: 8px;
-}
-::-webkit-scrollbar-track {
+body.landing-bg {
     background: var(--cream);
+    color: var(--dark);
+    font-family: var(--sans);
+    overflow-x: hidden;
+    padding-bottom: 200px;
 }
-::-webkit-scrollbar-thumb {
-    background: var(--cocoa);
+
+/* ---------------------------------------------------
+   NAVBAR
+--------------------------------------------------- */
+.nav {
+    width: 100%;
+    padding: 25px 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-family: var(--serif);
+    font-size: 1.3rem;
+    color: var(--dark);
+}
+
+.nav-links a {
+    margin-left: 35px;
+    text-decoration: none;
+    color: #5a5a5a;
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+}
+
+.nav-button {
+    border: 1px solid #5a5a5a;
+    padding: 6px 12px;
     border-radius: 4px;
 }
-::-webkit-scrollbar-thumb:hover {
-    background: var(--mocha);
+
+/* ---------------------------------------------------
+   HERO SECTION
+--------------------------------------------------- */
+.hero {
+    margin-top: 80px;
+    margin-left: 100px;
 }
 
-/* ====================================================
-   Smooth fade animation — used everywhere
-   ==================================================== */
+.hero-title {
+    font-family: var(--serif);
+    font-size: 5rem;
+    line-height: 1.1;
+    color: var(--dark);
+}
+
+.hero-title .mint {
+    color: var(--green);
+}
+
+.hero-desc {
+    font-size: 1.2rem;
+    color: #6b6b6b;
+    margin-top: 20px;
+}
+
+/* CTA Button */
+.cta-button {
+    margin-top: 40px;
+    display: inline-block;
+    background: var(--green);
+    color: white;
+    padding: 14px 26px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    text-decoration: none;
+    transition: 0.25s ease;
+}
+
+.cta-button:hover {
+    background: var(--dark);
+}
+
+/* ---------------------------------------------------
+   FEATURES
+--------------------------------------------------- */
+.features {
+    margin-top: 120px;
+    display: flex;
+    justify-content: center;
+    gap: 60px;
+}
+
+.feature {
+    width: 260px;
+    text-align: center;
+    font-size: 1.05rem;
+}
+
+.feature h3 {
+    font-family: var(--serif);
+    margin-bottom: 10px;
+}
+
+/* ---------------------------------------------------
+   FLOATING ICONS
+--------------------------------------------------- */
+.floating-icons .icon {
+    position: absolute;
+    width: 55px;
+    opacity: 0.9;
+}
+
+.icon.spin {
+    left: 80%;
+    top: 100px;
+    animation: spin 5s linear infinite;
+}
+
+.icon.pop {
+    left: 10%;
+    animation: pop 3s ease-in-out infinite alternate;
+}
+
+.icon.float {
+    left: 55%;
+    animation: float 4s ease-in-out infinite;
+}
+
+/* Icon delays */
+.delay-1 { animation-delay: 0.5s; }
+.delay-2 { animation-delay: 1.2s; }
+.delay-3 { animation-delay: 2s; }
+
+/* ---------------------------------------------------
+   ANIMATIONS
+--------------------------------------------------- */
 .fade-in {
-    animation: fadeIn .6s ease-out forwards;
     opacity: 0;
+    animation: fadeIn 0.9s ease-out forwards;
 }
+.delay-1 { animation-delay: 0.2s; }
+.delay-2 { animation-delay: 0.5s; }
+.delay-3 { animation-delay: 0.8s; }
+
 @keyframes fadeIn {
-    from { opacity:0; transform: translateY(10px);}
-    to   { opacity:1; transform: translateY(0);}
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ====================================================
-   Soft shadow utility (standard across UI)
-   ==================================================== */
-.shadow-soft {
-    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.10);
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+@keyframes float {
+    0%   { transform: translateY(0px); }
+    50%  { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
+@keyframes pop {
+    0%   { transform: scale(1); }
+    100% { transform: scale(1.25); opacity: 1; }
 }
