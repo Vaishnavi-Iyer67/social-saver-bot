@@ -1,3 +1,17 @@
+
+// ----------------------------
+// FIX FOR RAILWAY (Node 18)
+// Add global File polyfill
+// ----------------------------
+if (typeof File === "undefined") {
+  global.File = class File extends Blob {
+    constructor(chunks, filename, options = {}) {
+      super(chunks, options);
+      this.name = filename;
+      this.lastModified = options.lastModified || Date.now();
+    }
+  };
+}
 require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
