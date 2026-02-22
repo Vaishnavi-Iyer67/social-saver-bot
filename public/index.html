@@ -1,60 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Social Saver</title>
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login • Social Saver</title>
+    <link rel="stylesheet" href="style.css" />
 </head>
 
-<body class="landing-bg">
+<body>
+    <button id="themeToggle" class="theme-btn">☀ Light</button>
 
-    <!-- Animated Floating Icons -->
-    <div class="floating-icons">
-        <img src="assets/save.png" class="icon spin" alt="save icon">
-        <img src="assets/whatsapp.png" class="icon pop delay-1" alt="whatsapp">
-        <img src="assets/instagram.png" class="icon pop delay-2" alt="instagram">
-        <img src="assets/star.png" class="icon float delay-3" alt="star">
+    <div class="container">
+        <div class="login-card fade-in">
+            <div class="logo-area">
+                <img src="https://img.icons8.com/?size=512&id=23264&format=png" class="logo" alt="">
+            </div>
+
+            <h2 class="title">Welcome to Social Saver</h2>
+            <p class="subtitle">Save social content like a warm cup of coffee ☕  
+            Log in using your WhatsApp number.</p>
+
+            <label class="input-label">Phone Number</label>
+            <input type="text" id="phoneInput" class="input-box" placeholder="e.g. +1234567890">
+
+            <button class="login-btn" onclick="requestLogin()">Send Login Link</button>
+
+            <div id="responseBox" class="response-box hidden"></div>
+
+            <div class="about fade-up">
+                <h3>✨ About Social Saver</h3>
+                <p>
+                    Social Saver helps you store, organize and summarize your favorite
+                    posts from Instagram, WhatsApp or other platforms — all powered by AI.
+                    Keep your inspiration safe and beautifully arranged.
+                </p>
+            </div>
+        </div>
     </div>
 
-    <!-- HERO -->
-    <section class="hero fade-in">
-        <h1 class="hero-title">Save what<br><span class="mint">inspires you</span></h1>
-        <p class="hero-desc">
-            Social Saver keeps your meaningful moments safe — messages, media, chats and posts  
-            from WhatsApp & Instagram, organized beautifully.
-        </p>
+<script>
+    // 🌗 Theme Switcher
+    const toggleBtn = document.getElementById("themeToggle");
+    toggleBtn.addEventListener("click", () => {
+        document.body.classList.toggle("dark");
+        toggleBtn.textContent = document.body.classList.contains("dark")
+            ? "🌙 Dark"
+            : "☀ Light";
+    });
 
-        <a href="/login.html" class="cta-button fade-in delay-1">Start Login →</a>
-    </section>
+    // 📤 Request Login Link
+    async function requestLogin() {
+        const phone = document.getElementById("phoneInput").value.trim();
+        const box = document.getElementById("responseBox");
 
+        if (!phone) {
+            box.classList.remove("hidden");
+            box.textContent = "⚠ Please enter your phone number.";
+            return;
+        }
 
-    <!-- ABOUT THE APP -->
-    <section class="about fade-in delay-2">
-        <h2>What is Social Saver?</h2>
-        <p>
-            A modern tool designed to automatically collect, categorize and store your digital memories.
-            Whether it’s a heartfelt message, a funny chat, a beautiful photo, or a viral Instagram post —
-            Social Saver keeps it all safe, searchable and beautifully organized.
-        </p>
-    </section>
+        box.classList.remove("hidden");
+        box.textContent = "Sending…";
 
+        try {
+            const res = await fetch("/login-request", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ phone })
+            });
 
-    <!-- WHY USE SOCIAL SAVER -->
-    <section class="why">
-        <div class="why-card fade-in delay-3">
-            <h3>📱 Auto Capture</h3>
-            <p>Save WhatsApp & Instagram content instantly — no screenshots needed.</p>
-        </div>
+            const data = await res.json();
 
-        <div class="why-card fade-in delay-4">
-            <h3>🎯 Smart Sorting</h3>
-            <p>Messages, media, links & highlights are sorted automatically.</p>
-        </div>
-
-        <div class="why-card fade-in delay-5">
-            <h3>💾 Cloud Sync</h3>
-            <p>Your saved content is accessible anytime, anywhere.</p>
-        </div>
-    </section>
+            if (data.error) {
+                box.textContent = "❌ " + data.error;
+            } else {
+                box.innerHTML =
+                    `✅ Login link generated!<br>
+                    Open your WhatsApp and send: <b>LOGIN</b><br><br>
+                    Or click this link:<br>
+                    <a class="login-url" href="${data.loginLink}" target="_blank">${data.loginLink}</a>`;
+            }
+        } catch (err) {
+            box.textContent = "❌ Something went wrong.";
+        }
+    }
+</script>
 
 </body>
 </html>

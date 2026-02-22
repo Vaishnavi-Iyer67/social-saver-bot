@@ -1,178 +1,143 @@
 /* ---------------------------------------------------
-   COLOR + FONT SYSTEM
+   COLOR THEME
 --------------------------------------------------- */
 :root {
-    --cream: #f7f4ef;
-    --dark: #2a241f;
-    --mint: #7ea68c;
-    --serif: 'Georgia', serif;
-    --sans: 'Inter', sans-serif;
+    --cream: #F7F5F2;
+    --cocoa: #D8C3A5;
+    --mint: #B8E8D8;
+    --mocha: #3A2E2E;
+    --espresso: #1E1A1A;
 }
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    transition: background .3s ease, color .3s ease;
-}
-
-body.landing-bg {
-    background: var(--cream);
-    color: var(--dark);
-    font-family: var(--sans);
-    overflow-x: hidden;
-    padding-bottom: 200px;
+/* Dark mode */
+html.dark {
+    --cream: #1e1a1a;
+    --mocha: #F7F5F2;
+    --cocoa: #3b322e;
+    --mint: #2a453f;
+    --espresso: #0d0b0b;
 }
 
 /* ---------------------------------------------------
-   HERO
+   GLOBAL
 --------------------------------------------------- */
-.hero {
-    margin-top: 100px;
-    margin-left: 100px;
-    max-width: 650px;
+body {
+    background-color: var(--cream);
+    color: var(--mocha);
+    font-family: "Inter", sans-serif;
+    transition: background 0.3s ease, color 0.3s ease;
 }
 
-.hero-title {
-    font-family: var(--serif);
-    font-size: 5rem;
-    line-height: 1.1;
-}
-
-.hero-title .mint {
-    color: var(--mint);
-}
-
-.hero-desc {
-    margin-top: 20px;
-    font-size: 1.25rem;
-    color: #6b6b6b;
-    line-height: 1.5;
-}
-
-/* CTA Button */
-.cta-button {
-    margin-top: 40px;
-    display: inline-block;
-    padding: 14px 32px;
-    background: var(--mint);
-    color: white;
-    font-size: 1.2rem;
-    border-radius: 8px;
-    text-decoration: none;
-    transition: 0.25s ease;
-}
-
-.cta-button:hover {
-    background: var(--dark);
-}
-
-/* ---------------------------------------------------
-   ABOUT SECTION
---------------------------------------------------- */
-.about {
-    margin-top: 140px;
-    max-width: 700px;
-    margin-left: 100px;
-}
-
-.about h2 {
-    font-family: var(--serif);
-    font-size: 2.8rem;
-    margin-bottom: 20px;
-}
-
-.about p {
-    font-size: 1.15rem;
-    color: #555;
-    line-height: 1.65;
-}
-
-/* ---------------------------------------------------
-   WHY SECTION
---------------------------------------------------- */
-.why {
-    margin-top: 120px;
-    display: flex;
-    justify-content: center;
-    gap: 40px;
-}
-
-.why-card {
-    width: 260px;
-    background: white;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-    text-align: center;
-}
-
-.why-card h3 {
-    font-family: var(--serif);
-    margin-bottom: 12px;
-}
-
-/* ---------------------------------------------------
-   FLOATING ICONS
---------------------------------------------------- */
-.floating-icons .icon {
-    position: absolute;
-    width: 55px;
-    opacity: 0.9;
-}
-
-.icon.spin {
-    left: 80%;
-    top: 80px;
-    animation: spin 6s linear infinite;
-}
-
-.icon.pop {
-    left: 10%;
-    top: 300px;
-    animation: pop 3s ease-in-out infinite alternate;
-}
-
-.icon.float {
-    left: 60%;
-    top: 500px;
-    animation: float 5s ease-in-out infinite;
-}
-
-.delay-1 { animation-delay: 0.6s; }
-.delay-2 { animation-delay: 1.2s; }
-.delay-3 { animation-delay: 2s; }
-
-/* ---------------------------------------------------
-   ANIMATIONS
---------------------------------------------------- */
 .fade-in {
-    opacity: 0;
-    animation: fadeIn 1s ease-out forwards;
+    animation: fadeIn 0.6s ease forwards;
 }
-
-.delay-2 { animation-delay: 0.2s; }
-.delay-3 { animation-delay: 0.4s; }
-.delay-4 { animation-delay: 0.6s; }
-.delay-5 { animation-delay: 0.8s; }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(14px); }
-    to   { opacity: 1; transform: translateY(0); }
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; }
 }
 
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(360deg); }
+/* ---------------------------------------------------
+   INPUTS
+--------------------------------------------------- */
+input {
+    background: var(--cream) !important;
+    color: var(--espresso) !important;
+    border: 1px solid var(--cocoa);
+    padding: 12px 16px;
+    border-radius: 10px;
+    outline: none;
+    width: 100%;
+    transition: 0.2s ease;
+    font-size: 15px;
 }
 
-@keyframes float {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
-    100% { transform: translateY(0px); }
+input:focus {
+    border-color: var(--mint);
+    box-shadow: 0px 0px 6px var(--mint);
+    background: #fff !important;
 }
 
-@keyframes pop {
-    0% { transform: scale(1); }
-    100% { transform: scale(1.25); opacity: 1; }
+input::placeholder {
+    color: #6a6a6a !important;
+}
+
+/* Dark mode overrides */
+html.dark input {
+    background: #2b2420 !important;
+    color: #fff !important;
+    border-color: #4a3f39;
+}
+
+html.dark input::placeholder {
+    color: #c7c7c7 !important;
+}
+
+/* ---------------------------------------------------
+   BUTTONS
+--------------------------------------------------- */
+button {
+    border: none;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.btn-primary {
+    width: 100%;
+    background: var(--mint);
+    color: var(--mocha);
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    box-shadow: 2px 3px 10px rgba(0,0,0,0.1);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 3px 4px 14px rgba(0,0,0,0.15);
+}
+
+.btn-toggle {
+    padding: 10px 18px;
+    background: var(--cocoa);
+    color: var(--mocha);
+    border-radius: 30px;
+    font-size: 14px;
+}
+
+html.dark .btn-toggle {
+    background: #3b322e;
+    color: #f0e9e4;
+}
+
+/* ---------------------------------------------------
+   CARD / CONTAINER
+--------------------------------------------------- */
+.card {
+    background: #fff;
+    padding: 38px;
+    border-radius: 20px;
+    box-shadow: 0px 4px 16px rgba(0,0,0,0.07);
+    transition: 0.3s ease;
+}
+
+html.dark .card {
+    background: var(--espresso);
+    color: var(--cream);
+}
+
+/* ---------------------------------------------------
+   RESULT BOX
+--------------------------------------------------- */
+.result-box {
+    background: var(--mint);
+    padding: 16px;
+    border-radius: 14px;
+    font-size: 15px;
+}
+
+html.dark .result-box {
+    background: #38534d;
+    color: #fff;
 }
