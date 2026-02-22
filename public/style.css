@@ -1,0 +1,82 @@
+/* ====================================================
+   Café + Mint Custom Theme Palette
+   Used across all pages
+   ==================================================== */
+
+:root {
+    --cream: #f7f4ef;
+    --cocoa: #b69372;
+    --mocha: #6a4e37;
+    --espresso: #2b1d14;
+    --mint: #9ce2c9;
+}
+
+.dark {
+    --cream: #2b1d14;
+    --cocoa: #8a6d5a;
+    --mocha: #f7f4ef;
+    --espresso: #1a120d;
+    --mint: #8bdcc2;
+}
+
+/* Expose to Tailwind via utility classes */
+.bg-cream     { background-color: var(--cream); }
+.bg-cocoa     { background-color: var(--cocoa); }
+.bg-mocha     { background-color: var(--mocha); }
+.bg-espresso  { background-color: var(--espresso); }
+.bg-mint      { background-color: var(--mint); }
+
+.text-cream    { color: var(--cream); }
+.text-cocoa    { color: var(--cocoa); }
+.text-mocha    { color: var(--mocha); }
+.text-espresso { color: var(--espresso); }
+.text-mint     { color: var(--mint); }
+
+.border-cream    { border-color: var(--cream); }
+.border-cocoa    { border-color: var(--cocoa); }
+.border-mocha    { border-color: var(--mocha); }
+.border-espresso { border-color: var(--espresso); }
+.border-mint     { border-color: var(--mint); }
+
+/* ====================================================
+   Global Transitions — makes theme switching smooth
+   ==================================================== */
+* {
+    transition: background-color .25s ease, color .25s ease, border-color .25s ease;
+}
+
+/* ====================================================
+   Scrollbar styling (soft café)
+   ==================================================== */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: var(--cream);
+}
+::-webkit-scrollbar-thumb {
+    background: var(--cocoa);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--mocha);
+}
+
+/* ====================================================
+   Smooth fade animation — used everywhere
+   ==================================================== */
+.fade-in {
+    animation: fadeIn .6s ease-out forwards;
+    opacity: 0;
+}
+@keyframes fadeIn {
+    from { opacity:0; transform: translateY(10px);}
+    to   { opacity:1; transform: translateY(0);}
+}
+
+/* ====================================================
+   Soft shadow utility (standard across UI)
+   ==================================================== */
+.shadow-soft {
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.10);
+}

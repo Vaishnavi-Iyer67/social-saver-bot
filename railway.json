@@ -1,0 +1,10 @@
+{
+  "build": {
+    "builder": "docker"
+  },
+  "deploy": {
+    "startCommand": "node index.js",
+    "healthcheckPath": "/",
+    "healthcheckTimeout": 30
+  }
+}

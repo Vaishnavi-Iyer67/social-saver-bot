@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Analytics • Social Saver</title>
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Theme Engine -->
+<script src="/theme.js"></script>
+
+<style>
+.fade-in { animation: fadeIn .6s ease-out forwards; opacity: 0; }
+@keyframes fadeIn { 
+    from { opacity:0; transform: translateY(10px);} 
+    to {opacity:1; transform: translateY(0);} 
+}
+.soft-card {
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+</style>
+
+</head>
+
+<body class="bg-cream dark:bg-espresso text-mocha dark:text-cream min-h-screen">
+
+<div id="navbar-container"></div>
+<script>
+fetch("/navbar.html")
+    .then(r=>r.text())
+    .then(h=>document.getElementById("navbar-container").innerHTML = h);
+</script>
+
+<div class="max-w-5xl mx-auto px-6 fade-in mt-6">
+
+    <h1 class="text-3xl font-semibold mb-6">Analytics Dashboard</h1>
+
+    <!-- CARDS ROW -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
+        <!-- Total Saved -->
+        <div class="bg-white dark:bg-mocha rounded-2xl p-6 soft-card">
+            <h2 class="text-lg mb-2">Total Saved Posts</h2>
+            <p id="totalSaved" class="text-3xl font-bold">—</p>
+        </div>
+
+        <!-- Favorite Category -->
+        <div class="bg-white dark:bg-mocha rounded-2xl p-6 soft-card">
+            <h2 class="text-lg mb-2">Favorite Category</h2>
+            <p id="favCategory" class="text-2xl font-semibold">—</p>
+        </div>
+
+    </div>
+
+    <!-- CHARTS SECTION -->
+    <div class="bg-white dark:bg-mocha rounded-2xl p-6 soft-card mt-8">
+        <h2 class="text-xl font-semibold mb-4">Posts per Category</h2>
+        <canvas id="categoryChart" height="120"></canvas>
+    </div>
+
+    <!-- TRENDING LABELS -->
+    <div class="bg-white dark:bg-mocha rounded-2xl p-6 soft-card mt-8">
+        <h2 class="text-xl font-semibold mb-4">🔥 Trending Labels</h2>
+
+        <ul id="trendingList" class="space-y-3 text-lg"></ul>
+    </div>
+
+</div>
+
+
+<script>
+async function loadAnalytics() {
+
+    /* ---------- CATEGORY CHART ---------- */
+    const catRes = await fetch("/analytics/categories");
+    const categories = await catRes.json();
+
+    const labels = categories.map(c => c.category);
+    const counts = categories.map(c => c.total_posts);
+
+    const ctx = document.getElementById("categoryChart");
+
+    new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels,
+            datasets: [{
+                label: "Posts",
+                data: counts,
+                backgroundColor: "rgba(80, 200, 160, 0.6)", // mint semi
+                borderColor: "rgba(80, 200, 160, 1)",
+                borderWidth: 2,
+                borderRadius: 8,
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: { ticks: { color: "#6a4e37" }},
+                y: { ticks: { color: "#6a4e37" }},
+            }
+        }
+    });
+
+
+    /* ---------- TRENDING LABELS ---------- */
+    const trendRes = await fetch("/analytics/trending");
+    const trending = await trendRes.json();
+
+    const trendBox = document.getElementById("trendingList");
+
+    trending.forEach(t => {
+        const li = document.createElement("li");
+        li.className = "p-3 rounded-xl bg-cream dark:bg-espresso shadow-sm flex justify-between";
+        li.innerHTML = `
+            <span>${t.label} <small class="opacity-60">(${t.category})</small></span>
+            <strong>${t.total_posts}</strong>
+        `;
+        trendBox.appendChild(li);
+    });
+
+
+    /* ---------- USER FAVORITE CATEGORY ---------- */
+    const phone = localStorage.getItem("userPhone");
+    if (phone) {
+        const favRes = await fetch(`/analytics/user/${phone}/favorite`);
+        const fav = await favRes.json();
+
+        document.getElementById("favCategory").textContent =
+            fav.favorite_category || "None yet";
+
+        document.getElementById("totalSaved").textContent =
+            fav.total_saved || 0;
+    }
+}
+
+loadAnalytics();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!-- Load Theme JS -->
+<script src="/theme.js"></script>
+
+<!-- Inject Navbar -->
+<div id="navbar-container"></div>
+<script>
+fetch("/navbar.html")
+    .then(res => res.text())
+    .then(html => document.getElementById("navbar-container").innerHTML = html);
+</script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Saver</title>
+
+    <!-- Tailwind (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Café Theme Colors -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cream: '#F7F5F2',
+                        cocoa: '#D8C3A5',
+                        mint: '#B8E8D8',
+                        mintdark: '#A9DCCD',
+                        coffeetext: '#3A2E2E'
+                    },
+                    boxShadow: {
+                        soft: '0 8px 20px rgba(0,0,0,0.05)',
+                        hover: '0 10px 25px rgba(0,0,0,0.08)'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Soft fade animation */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out forwards;
+            opacity: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Hover lift */
+        .lift:hover {
+            transform: translateY(-4px);
+            transition: 0.2s ease;
+        }
+    </style>
+</head>
+
+<body class="bg-cream text-coffeetext min-h-screen">
+    <!-- NAVBAR -->
+<nav class="w-full bg-cream border-b border-cocoa/40 sticky top-0 backdrop-blur-lg z-50">
+    <div class="max-w-5xl mx-auto py-4 px-6 flex items-center justify-between">
+        
+        <!-- Logo -->
+        <div class="flex items-center gap-2">
+            <span class="text-2xl">☕</span>
+            <h1 class="text-xl font-semibold">Social Saver</h1>
+        </div>
+
+        <!-- Links -->
+        <div class="flex gap-6 text-md">
+            <a href="/dashboard" class="hover:text-cocoa transition">Dashboard</a>
+            <a href="/all-posts" class="hover:text-cocoa transition">All Posts</a>
+            <a href="/search" class="hover:text-cocoa transition">Search</a>
+            <a href="/analytics" class="hover:text-cocoa transition">Analytics</a>
+        </div>
+    </div>
+</nav>
+<footer class="text-center mt-20 py-6 text-sm text-coffeetext/50">
+    Built with ☕ + 🍃 + ❤️
+</footer>
+</body>
+</html>

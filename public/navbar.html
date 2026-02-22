@@ -1,0 +1,31 @@
+<!-- NAVBAR COMPONENT -->
+<nav class="w-full bg-cream dark:bg-espresso border-b border-cocoa/40 
+            dark:border-mocha/50 px-6 py-4 flex justify-between items-center
+            fixed top-0 left-0 right-0 z-50 shadow-soft">
+
+    <!-- Logo -->
+    <div class="flex items-center gap-2">
+        <span class="text-2xl">☕</span>
+        <span class="text-xl font-semibold text-mocha dark:text-cream">Social Saver</span>
+    </div>
+
+    <!-- Links -->
+    <div class="hidden md:flex gap-6 text-mocha dark:text-cream">
+
+        <a href="/dashboard" class="hover:text-cocoa dark:hover:text-mint">Dashboard</a>
+        <a href="/all-posts" class="hover:text-cocoa dark:hover:text-mint">All Posts</a>
+        <a href="/search" class="hover:text-cocoa dark:hover:text-mint">Search</a>
+        <a href="/analytics" class="hover:text-cocoa dark:hover:text-mint">Analytics</a>
+        <a href="/profile" class="hover:text-cocoa dark:hover:text-mint">Profile</a>
+    </div>
+
+    <!-- Theme Toggle -->
+    <button id="themeToggleNav"
+            class="px-4 py-2 rounded-full bg-cocoa text-mocha text-sm 
+                   dark:bg-mocha dark:text-cream shadow-soft hover:shadow-hover">
+        ☀️ Light
+    </button>
+</nav>
+
+<!-- Spacer so content is not hidden behind navbar -->
+<div class="h-20"></div>

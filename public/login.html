@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Login • Social Saver</title>
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Theme Config -->
+<script>
+tailwind.config = {
+    theme: {
+        extend: {
+            colors: {
+                cream: "#F7F5F2",
+                cocoa: "#D8C3A5",
+                mint: "#B8E8D8",
+                mocha: "#3A2E2E",
+                espresso: "#1E1A1A",
+            },
+            boxShadow: {
+                soft: "0 8px 20px rgba(0,0,0,0.06)",
+                hover: "0 12px 30px rgba(0,0,0,0.12)",
+            },
+        },
+    },
+};
+</script>
+
+<!-- Fade Animations -->
+<style>
+.fade-in { animation: fadeIn 0.6s ease forwards; opacity: 0; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px);} to {opacity:1; transform:translateY(0);} }
+
+.lift:hover { transform: translateY(-4px); transition: 0.25s ease; }
+
+html.dark {
+    background-color: #1E1A1A !important;
+}
+</style>
+</head>
+
+<body class="bg-cream text-mocha transition-all duration-300">
+
+<!-- THEME TOGGLE -->
+<div class="absolute top-4 right-6">
+    <button id="themeToggle"
+        class="px-4 py-2 rounded-full bg-cocoa text-mocha text-sm shadow-soft hover:shadow-hover">
+        ☀️ Light
+    </button>
+</div>
+
+<!-- CONTAINER -->
+<div class="min-h-screen flex items-center justify-center px-6 fade-in">
+
+    <div class="bg-white dark:bg-espresso text-mocha dark:text-cream
+                w-full max-w-md p-10 rounded-2xl shadow-soft border border-cocoa/40">
+
+        <!-- Heading -->
+        <div class="text-center mb-6">
+            <div class="text-4xl mb-2">☕</div>
+            <h1 class="text-2xl font-semibold">Welcome to Social Saver</h1>
+            <p class="text-mocha/60 dark:text-cream/70 text-sm mt-1">
+                Log in with your phone number to continue
+            </p>
+        </div>
+
+        <!-- Form -->
+        <div class="space-y-4">
+            <label class="block text-sm mb-1">Phone Number</label>
+            <input id="phoneInput"
+                   class="w-full px-4 py-3 rounded-xl border border-cocoa/40
+                          bg-cream focus:outline-none"
+                   placeholder="+91XXXXXXXXXX" />
+
+            <button onclick="requestLogin()"
+                    class="w-full mt-4 py-3 bg-mint text-mocha rounded-xl shadow-soft lift">
+                Send Login Link
+            </button>
+        </div>
+
+        <!-- Results -->
+        <div id="resultBox" class="mt-6 p-4 bg-mint rounded-xl text-mocha hidden"></div>
+
+    </div>
+</div>
+
+<script>
+// Light/Dark Toggle
+const toggleBtn = document.getElementById("themeToggle");
+toggleBtn.addEventListener("click", () => {
+    document.documentElement.classList.toggle("dark");
+
+    const mode = document.documentElement.classList.contains("dark")
+        ? "dark"
+        : "light";
+
+    toggleBtn.innerText = mode === "dark" ? "🌙 Dark" : "☀️ Light";
+
+    localStorage.setItem("theme", mode);
+});
+
+// Restore theme
+if (localStorage.getItem("theme") === "dark") {
+    document.documentElement.classList.add("dark");
+    toggleBtn.innerText = "🌙 Dark";
+}
+
+
+
+// Request login link
+async function requestLogin() {
+    const phone = document.getElementById("phoneInput").value.trim();
+    if (!phone) return alert("Enter phone number");
+
+    const res = await fetch("/login-request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone })
+    });
+
+    const data = await res.json();
+
+    const box = document.getElementById("resultBox");
+    box.classList.remove("hidden");
+    box.innerText = "Login link sent! Check your WhatsApp.\n\n" + data.loginLink;
+}
+</script>
+
+</body>
+</html>

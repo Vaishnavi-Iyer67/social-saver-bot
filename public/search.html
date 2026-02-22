@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Search • Social Saver</title>
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Theme System -->
+<script src="/theme.js"></script>
+
+<style>
+.fade-in { animation: fadeIn .5s ease-out forwards; opacity: 0; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(10px);} to {opacity:1; transform:none;} }
+
+/* Animated Search Input Glow */
+.search-focus:focus {
+    box-shadow: 0 0 0 3px rgba(0, 180, 150, 0.4);
+    transition: .2s ease;
+}
+</style>
+
+</head>
+
+<body class="bg-cream dark:bg-espresso text-mocha dark:text-cream min-h-screen">
+
+<!-- NAVBAR -->
+<div id="navbar-container"></div>
+<script>
+fetch("/navbar.html")
+  .then(r => r.text())
+  .then(h => document.getElementById("navbar-container").innerHTML = h);
+</script>
+
+<!-- MAIN WRAPPER -->
+<div class="max-w-4xl mx-auto px-6 pt-6 fade-in">
+
+    <h1 class="text-3xl font-semibold mb-3">Search</h1>
+    <p class="text-mocha/60 dark:text-cream/70 mb-6">
+        Find any content instantly — by summary, category, or label.
+    </p>
+
+    <!-- Search Input -->
+    <input 
+        id="searchBox" 
+        type="text" 
+        placeholder="Search anything (e.g., 'recipe', 'travel', 'fitness')..."
+        class="w-full p-4 rounded-2xl bg-white dark:bg-mocha border 
+               border-cocoa/30 dark:border-mocha/60 shadow-soft 
+               search-focus outline-none text-lg">
+    
+    <div id="results" class="mt-8 space-y-6"></div>
+
+</div>
+
+<script>
+// =========== IG EMBED =============
+function getInstagramEmbed(url) {
+    if (!url.includes("instagram.com")) return "";
+    return `
+        <blockquote class="instagram-media" 
+            data-instgrm-permalink="${url}" 
+            data-instgrm-version="14"></blockquote>
+    `;
+}
+
+
+// =========== RENDER RESULTS =============
+function renderResults(list) {
+    const box = document.getElementById("results");
+    box.innerHTML = "";
+
+    if (list.length === 0) {
+        box.innerHTML = `
+            <p class="text-mocha/60 dark:text-cream/70 text-center mt-6">
+                No results found.
+            </p>
+        `;
+        return;
+    }
+
+    list.forEach(p => {
+        const isIG = p.original_url.includes("instagram.com");
+
+        box.innerHTML += `
+        <div class="p-5 bg-white dark:bg-mocha border border-cocoa/40 dark:border-mocha/60 
+                    rounded-2xl shadow-soft fade-in">
+
+            <div class="inline-block px-3 py-1 bg-mint text-mocha rounded-full 
+                        text-sm shadow-soft mb-3">
+                ${p.category} • ${p.label}
+            </div>
+
+            <div class="mb-4">
+                ${isIG ? getInstagramEmbed(p.original_url)
+                       : `<a href="${p.original_url}" class="underline" target="_blank">Open Post</a>`}
+            </div>
+
+            <p class="text-mocha/80 dark:text-cream/80">
+                ${p.ai_summary}
+            </p>
+
+            <p class="text-xs text-mocha/50 mt-3 dark:text-cream/50">
+                Saved on ${new Date(p.created_at).toLocaleDateString()}
+            </p>
+        </div>`;
+    });
+
+    // Load Instagram Embeds
+    const ig = document.createElement("script");
+    ig.src = "https://www.instagram.com/embed.js";
+    document.body.appendChild(ig);
+}
+
+
+// =========== SEARCH LIVE =============
+let typingTimeout;
+
+document.getElementById("searchBox").addEventListener("input", function () {
+    const query = this.value.trim();
+    clearTimeout(typingTimeout);
+
+    typingTimeout = setTimeout(async () => {
+        if (query.length === 0) {
+            document.getElementById("results").innerHTML = "";
+            return;
+        }
+
+        const res = await fetch(`/search-api?query=${encodeURIComponent(query)}`);
+        const data = await res.json();
+
+        renderResults(data);
+    }, 250); // debounce
+});
+
+</script>
+
+</body>
+</html>
